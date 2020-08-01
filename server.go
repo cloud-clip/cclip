@@ -90,6 +90,64 @@ func checkPassword(next http.Handler) http.Handler {
 	})
 }
 
+func getClipData(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+
+	clipFileName := path.Join(ClipDirectory, vars["id"])
+	clipFileStat, err := os.Stat(clipFileName)
+	if err != nil {
+		SendError(w, err)
+		return
+	}
+
+	if clipFileStat.IsDir() {
+		w.WriteHeader(404)
+		return
+	}
+
+	clipMetaFileName := path.Join(ClipDirectory, vars["id"]+".meta")
+	clipMetaFileStat, err := os.Stat(clipMetaFileName)
+	if err != nil {
+		SendError(w, err)
+		return
+	}
+
+	if clipMetaFileStat.IsDir() {
+		w.WriteHeader(404)
+		return
+	}
+
+	// get mime type
+	var clipMime string
+	{
+		clipMetaBytes, err := ioutil.ReadFile(clipMetaFileName)
+		if err == nil {
+			var clipMeta clipMetaData
+
+			err := json.Unmarshal(clipMetaBytes, &clipMeta)
+			if err == nil {
+				clipMime = clipMeta.MIME
+			}
+		}
+	}
+	clipMime = strings.TrimSpace(strings.ToLower(clipMime))
+
+	file, err := os.Open(clipFileName)
+	if err != nil {
+		SendError(w, err)
+		return
+	}
+
+	defer file.Close()
+
+	if clipMime != "" {
+		w.Header().Set("Content-Type", clipMime)
+	}
+	w.Header().Set("Content-Length", strconv.FormatInt(clipFileStat.Size(), 10))
+	w.Header().Set("Date", clipFileStat.ModTime().Format(http.TimeFormat))
+	io.Copy(w, file)
+}
+
 func getClips(w http.ResponseWriter, req *http.Request) {
 	var files []string
 
@@ -99,7 +157,7 @@ func getClips(w http.ResponseWriter, req *http.Request) {
 			fileName := path.Base(fullPath)
 			fileName = fileName[0 : len(fileName)-5]
 
-			doesMatch, _ := regexp.MatchString("^(\\d{10,})(\\-)([0-9a-f]{32})$", fileName)
+			doesMatch, _ := regexp.MatchString("^([0-9a-f]{32})$", fileName)
 			if doesMatch {
 				files = append(files, fileName)
 			}
@@ -149,14 +207,6 @@ func getClips(w http.ResponseWriter, req *http.Request) {
 			continue
 		}
 
-		sep := strings.Index(f, "-")
-
-		// creation time
-		ctime, err := strconv.ParseInt(f[0:sep], 10, 64)
-		if err != nil {
-			continue
-		}
-
 		// clip meta from JSON
 		err = json.Unmarshal(clipMetaBytes, &clipMeta)
 		if err != nil {
@@ -165,11 +215,11 @@ func getClips(w http.ResponseWriter, req *http.Request) {
 
 		// create a new clip item for the result list
 		var newItem clipItem
-		newItem.ID = f[sep+1 : len(f)]
+		newItem.ID = f
 		newItem.MIME = clipMeta.MIME
 		newItem.Name = clipMeta.Name
-		newItem.CreationTime = ctime
 		newItem.ModificationTime = clipFileStat.ModTime().Unix()
+		newItem.CreationTime = newItem.ModificationTime
 		newItem.Size = clipFileStat.Size()
 		newItem.ResourceLink = "/api/v1/clips/" + url.PathEscape(newItem.ID)
 		newItem.ShareLink = "/api/v1/clips/" + url.PathEscape(newItem.ID) + "/share"
@@ -230,10 +280,9 @@ func uploadClip(w http.ResponseWriter, req *http.Request) {
 
 	ctime := time.Now().Unix()
 	id := strings.ReplaceAll(uuid.New().String(), "-", "")
-	filePrefix := strconv.FormatInt(ctime, 10) + "-"
 
-	clipFileName := path.Join(ClipDirectory, filePrefix+id)
-	clipMetaFileName := path.Join(ClipDirectory, filePrefix+id+".meta")
+	clipFileName := path.Join(ClipDirectory, id)
+	clipMetaFileName := path.Join(ClipDirectory, id+".meta")
 
 	err = os.Rename(tmpFile.Name(), clipFileName)
 	if err != nil {
@@ -404,6 +453,7 @@ func RunServer(c *cli.Context) error {
 	router.HandleFunc("/api/v1", getServerInfo).Methods("GET")
 	router.HandleFunc("/api/v1/clips", getClips).Methods("GET")
 	router.HandleFunc("/api/v1/clips", uploadClip).Methods("POST")
+	router.HandleFunc("/api/v1/clips/{id:[0-9a-f]{32}}", getClipData).Methods("GET")
 
 	log.Println("Server will run on port", port, "...")
 

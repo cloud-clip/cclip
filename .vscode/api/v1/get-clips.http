@@ -1,2 +1,2 @@
 GET http://localhost:50979/api/v1/clips
-Authorization: Bearer test
+Authorization: Bearer {{$dotenv PASSWORD}}

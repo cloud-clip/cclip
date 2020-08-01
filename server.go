@@ -17,22 +17,36 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/urfave/cli/v2"
 )
 
-func hello(w http.ResponseWriter, req *http.Request) {
-	b := []byte("Hello!")
+type serverInfo struct {
+	IP   string `json:"ip"`
+	Time string `json:"time"`
+}
 
-	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(200)
-	w.Write(b)
+func getServerInfo(w http.ResponseWriter, req *http.Request) {
+	var info serverInfo
+	info.IP = req.RemoteAddr
+	info.Time = time.Now().Format(time.RFC3339)
+
+	bytes, err := json.Marshal(info)
+	if err != nil {
+		SendError(w, err)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json; charset=utf-8")
+	w.Write(bytes)
 }
 
 // RunServer - Runs the server component
@@ -56,7 +70,8 @@ func RunServer(c *cli.Context) error {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/hello", hello).Methods("GET")
+	// initialize routes
+	router.HandleFunc("/api/v1", getServerInfo).Methods("GET")
 
 	log.Println("Server will run on port", port, "...")
 

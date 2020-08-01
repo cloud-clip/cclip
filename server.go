@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -42,6 +43,8 @@ type clipItem struct {
 	CreationTime     int64  `json:"ctime"`
 	ModificationTime int64  `json:"mtime"`
 	Size             int64  `json:"size"`
+	ResourceLink     string `json:"resource"`
+	ShareLink        string `json:"share"`
 }
 
 type clipMetaData struct {
@@ -55,9 +58,14 @@ type serverInfo struct {
 }
 
 type uploadFileResponse struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	MIME string `json:"mime"`
+	ID               string `json:"id"`
+	Name             string `json:"name"`
+	MIME             string `json:"mime"`
+	CreationTime     int64  `json:"ctime"`
+	ModificationTime int64  `json:"mtime"`
+	Size             int64  `json:"size"`
+	ResourceLink     string `json:"resource"`
+	ShareLink        string `json:"share"`
 }
 
 // ClipDirectory - The clip / output directory
@@ -163,6 +171,8 @@ func getClips(w http.ResponseWriter, req *http.Request) {
 		newItem.CreationTime = ctime
 		newItem.ModificationTime = clipFileStat.ModTime().Unix()
 		newItem.Size = clipFileStat.Size()
+		newItem.ResourceLink = "/api/v1/clips/" + url.PathEscape(newItem.ID)
+		newItem.ShareLink = "/api/v1/clips/" + url.PathEscape(newItem.ID) + "/share"
 
 		items = append(items, newItem)
 	}
@@ -218,8 +228,9 @@ func uploadClip(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	ctime := time.Now().Unix()
 	id := strings.ReplaceAll(uuid.New().String(), "-", "")
-	filePrefix := strconv.FormatInt(time.Now().Unix(), 10) + "-"
+	filePrefix := strconv.FormatInt(ctime, 10) + "-"
 
 	clipFileName := path.Join(ClipDirectory, filePrefix+id)
 	clipMetaFileName := path.Join(ClipDirectory, filePrefix+id+".meta")
@@ -279,6 +290,20 @@ func uploadClip(w http.ResponseWriter, req *http.Request) {
 	response.ID = id
 	response.MIME = clipMeta.MIME
 	response.Name = clipMeta.Name
+	response.ResourceLink = "/api/v1/clips/" + url.PathEscape(id)
+	response.ShareLink = "/api/v1/clips/" + url.PathEscape(id) + "/share"
+	response.CreationTime = ctime
+	response.ModificationTime = -1
+	response.Size = -1
+
+	clipFileStat, err := os.Stat(clipFileName)
+	if err != nil {
+		response.ModificationTime = clipFileStat.ModTime().Unix()
+		response.Size = clipFileStat.Size()
+	}
+
+	response.ModificationTime = clipFileStat.ModTime().Unix()
+	response.Size = clipFileStat.Size()
 
 	// serialize response
 	bytes, err = json.Marshal(response)

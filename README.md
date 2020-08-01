@@ -90,15 +90,19 @@ Connection: close
     "mime": "text/html",
     "ctime": 1596200000,
     "mtime": 1596200000,
-    "size": 23979
+    "size": 23979,
+    "resource": "/api/v1/clips/01234567890123456789012345678901",
+    "share": "/api/v1/clips/01234567890123456789012345678901/share"
   },
   {
-    "id": "01234567890123456789012345678901",
+    "id": "01234567890123456789012345678902",
     "name": "A text file",
     "mime": "text/plain",
     "ctime": 1596200001,
     "mtime": 1596200001,
-    "size": 5979
+    "size": 5979,
+    "resource": "/api/v1/clips/01234567890123456789012345678902",
+    "share": "/api/v1/clips/01234567890123456789012345678902/share"
   }
 ]
 ```
@@ -114,14 +118,14 @@ POST http://localhost:50979/api/v1/clips
 Authorization: Bearer <YOUR-PASSWORD-HER>
 Content-Type: text/plain; charset=utf-8
 
-Gallia est omnis divisa in partes tres, quarum unam incolunt Belgae, aliam Aquitani, tertiam, qui ipsorum lingua Celtae, nostra Galli appellantur.
-Hi omnes lingua, institutis, legibus inter se differunt.
-Gallos ab Aquitanis Garunna flumen, a Belgis Matrona et Sequana dividit.
-Horum omnium fortissimi sunt Belgae, propterea quod a cultu atque humanitate provinciae longissime absunt, minimeque ad eos mercatores saepe commeant atque ea quae ad effeminandos animos pertinent important, proximique sunt Germanis, qui trans Rhenum incolunt, quibuscum continenter bellum gerunt.
-Qua de causa Helvetii quoque reliquos Gallos virtute praecedunt, quod fere cotidianis proeliis cum Germanis contendunt, cum aut suis finibus eos prohibent aut ipsi in eorum finibus bellum gerunt.
-Eorum una pars, quam Gallos obtinere dictum est, initium capit a flumine Rhodano, continetur Garunna flumine, Oceano, finibus Belgarum, attingit etiam ab Sequanis et Helvetiis flumen Rhenum, vergit ad septentriones.
-Belgae ab extremis Galliae finibus oriuntur, pertinent ad inferiorem partem fluminis Rheni, spectant in septentrionem et orientem solem.
-Aquitania a Garunna flumine ad Pyrenaeos montes et eam partem Oceani quae est ad Hispaniam pertinet; spectat inter occasum solis et septentriones.
+Gallia est omnis divisa in partes tres quarum unam incolunt Belgae aliam Aquitani tertiam qui ipsorum lingua Celtae nostra Galli appellantur
+Hi omnes lingua institutis legibus inter se differunt
+Gallos ab Aquitanis Garunna flumen a Belgis Matrona et Sequana dividit
+Horum omnium fortissimi sunt Belgae propterea quod a cultu atque humanitate provinciae longissime absunt minimeque ad eos mercatores saepe commeant atque ea quae ad effeminandos animos pertinent important proximique sunt Germanis qui trans Rhenum incolunt quibuscum continenter bellum gerunt
+Qua de causa Helvetii quoque reliquos Gallos virtute praecedunt quod fere cotidianis proeliis cum Germanis contendunt cum aut suis finibus eos prohibent aut ipsi in eorum finibus bellum gerunt
+Eorum una pars quam Gallos obtinere dictum est initium capit a flumine Rhodano continetur Garunna flumine Oceano finibus Belgarum attingit etiam ab Sequanis et Helvetiis flumen Rhenum vergit ad septentriones
+Belgae ab extremis Galliae finibus oriuntur pertinent ad inferiorem partem fluminis Rheni spectant in septentrionem et orientem solem
+Aquitania a Garunna flumine ad Pyrenaeos montes et eam partem Oceani quae est ad Hispaniam pertinet; spectat inter occasum solis et septentriones
 ```
 
 Response:
@@ -136,6 +140,11 @@ Connection: close
 {
   "id": "01234567890123456789012345678901",
   "name": "A HTML file",
-  "mime": "text/plain; charset=utf-8"
+  "mime": "text/plain; charset=utf-8",
+  "ctime": 1596200000,
+  "mtime": 1596200000,
+  "size": 23979,
+  "resource": "/api/v1/clips/01234567890123456789012345678901",
+  "share": "/api/v1/clips/01234567890123456789012345678901/share"
 }
 ```

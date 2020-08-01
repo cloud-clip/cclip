@@ -426,11 +426,11 @@ func RunServer(c *cli.Context) error {
 	}
 
 	// initialize routes
-	router.HandleFunc("/api/v1", getServerInfo).Methods("GET")
-	router.HandleFunc("/api/v1/clips", getClips).Methods("GET")
-	router.HandleFunc("/api/v1/clips", getClipsHead).Methods("HEAD")
-	router.HandleFunc("/api/v1/clips", uploadClip).Methods("POST")
-	router.HandleFunc("/api/v1/clips/{id:[0-9a-f]{32}}", getClipData).Methods("GET")
+	AddHTTPAction(router, "/", getServerInfo, "GET")
+	AddHTTPAction(router, "/clips", getClips, "GET")
+	AddHTTPAction(router, "/clips", getClipsHead, "HEAD")
+	AddHTTPAction(router, "/clips", uploadClip, "POST")
+	AddHTTPAction(router, "/clips/{id:[0-9a-f]{32}}", getClipData, "GET")
 
 	log.Println("Server will run on port", port, "...")
 

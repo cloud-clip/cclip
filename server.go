@@ -25,8 +25,6 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -67,12 +65,6 @@ type uploadFileResponse struct {
 	ResourceLink     string `json:"resource"`
 	ShareLink        string `json:"share"`
 }
-
-// ClipDirectory - The clip / output directory
-var ClipDirectory string
-
-// MaxClipSize - Maximum size for a clip, in bytes
-var MaxClipSize int64 = 0
 
 // Password - The API password
 var Password string
@@ -149,23 +141,8 @@ func getClipData(w http.ResponseWriter, req *http.Request) {
 }
 
 func getClips(w http.ResponseWriter, req *http.Request) {
-	var files []string
-
 	// try scan directory for ".meta" files
-	err := filepath.Walk(ClipDirectory, func(fullPath string, info os.FileInfo, err error) error {
-		if strings.HasSuffix(fullPath, ".meta") {
-			fileName := path.Base(fullPath)
-			fileName = fileName[0 : len(fileName)-5]
-
-			doesMatch, _ := regexp.MatchString("^([0-9a-f]{32})$", fileName)
-			if doesMatch {
-				files = append(files, fileName)
-			}
-		}
-
-		return nil
-	})
-
+	clips, err := ScanClipDirectory()
 	if err != nil {
 		SendError(w, err)
 		return
@@ -173,30 +150,8 @@ func getClips(w http.ResponseWriter, req *http.Request) {
 
 	var items []clipItem
 
-	for _, f := range files {
-		// get clip filename
-		clipFileName := path.Join(ClipDirectory, f)
-		clipFileStat, err := os.Stat(clipFileName)
-		if err != nil {
-			continue
-		}
-
-		if clipFileStat.IsDir() {
-			continue // no file
-		}
-
-		// get clip meta filename
-		clipMetaFileName := path.Join(ClipDirectory, f+".meta")
-		clipFileMetaStat, err := os.Stat(clipMetaFileName)
-		if err != nil {
-			continue
-		}
-
-		if clipFileMetaStat.IsDir() {
-			continue // no file
-		}
-
-		clipMetaBytes, err := ioutil.ReadFile(clipMetaFileName)
+	for _, c := range clips {
+		clipMetaBytes, err := ioutil.ReadFile(c.metaFile)
 		if err != nil {
 			continue
 		}
@@ -215,12 +170,12 @@ func getClips(w http.ResponseWriter, req *http.Request) {
 
 		// create a new clip item for the result list
 		var newItem clipItem
-		newItem.ID = f
+		newItem.ID = c.id
 		newItem.MIME = clipMeta.MIME
 		newItem.Name = clipMeta.Name
-		newItem.ModificationTime = clipFileStat.ModTime().Unix()
+		newItem.ModificationTime = c.fileInfo.ModTime().Unix()
 		newItem.CreationTime = newItem.ModificationTime
-		newItem.Size = clipFileStat.Size()
+		newItem.Size = c.fileInfo.Size()
 		newItem.ResourceLink = "/api/v1/clips/" + url.PathEscape(newItem.ID)
 		newItem.ShareLink = "/api/v1/clips/" + url.PathEscape(newItem.ID) + "/share"
 
@@ -234,8 +189,29 @@ func getClips(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	if len(clips) > 0 {
+		w.Header().Set("Date", clips[0].fileInfo.ModTime().Format(http.TimeFormat))
+	}
+
 	w.Header().Add("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Length", strconv.Itoa(len(bytes)))
 	w.Write(bytes)
+}
+
+func getClipsHead(w http.ResponseWriter, req *http.Request) {
+	clips, err := ScanClipDirectory()
+	if err == nil {
+		if len(clips) > 0 {
+			w.Header().Set("Date", clips[0].fileInfo.ModTime().Format(http.TimeFormat))
+		}
+
+		w.Header().Set("Content-Length", "0")
+		w.Header().Set("X-Cclip-Count", strconv.Itoa(len(clips)))
+
+		w.WriteHeader(204)
+	} else {
+		w.WriteHeader(500)
+	}
 }
 
 func getServerInfo(w http.ResponseWriter, req *http.Request) {
@@ -452,6 +428,7 @@ func RunServer(c *cli.Context) error {
 	// initialize routes
 	router.HandleFunc("/api/v1", getServerInfo).Methods("GET")
 	router.HandleFunc("/api/v1/clips", getClips).Methods("GET")
+	router.HandleFunc("/api/v1/clips", getClipsHead).Methods("HEAD")
 	router.HandleFunc("/api/v1/clips", uploadClip).Methods("POST")
 	router.HandleFunc("/api/v1/clips/{id:[0-9a-f]{32}}", getClipData).Methods("GET")
 

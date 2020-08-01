@@ -107,6 +107,34 @@ Connection: close
 ]
 ```
 
+#### [HEAD] /api/v1/clips
+
+Returns short information about the current clip list.
+
+Request:
+
+```http
+HEAD http://localhost:50979/api/v1/clips
+Authorization: Bearer <YOUR-PASSWORD-HERE>
+
+```
+
+Response:
+
+```http
+HTTP/1.1 204 OK
+Date: Wed, 05 Sep 1979 21:09:00 GMT
+Content-Length: 0
+X-Cclip-Count: 2
+Connection: close
+
+```
+
+| Header | Description |
+|------|-------------|
+| `Date` | The timestamp of the newest clip. |
+| `X-Cclip-Count` | The total number of clips. |
+
 #### [GET] /api/v1/clips/{id}
 
 Gets the data of a clip.

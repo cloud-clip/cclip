@@ -16,9 +16,21 @@
 
 package main
 
-import "net/http"
+import (
+	"net/http"
+	"os"
+)
 
-// SendError - sends a 500 error back to the HTTP clients
-func SendError(w http.ResponseWriter, err error) {
-	http.Error(w, err.Error(), 500)
+// GetFileContentType - Returns the MIME type of a file
+//
+// https://golangcode.com/get-the-content-type-of-file/
+func GetFileContentType(out *os.File) (string, error) {
+	buffer := make([]byte, 512)
+
+	_, err := out.Read(buffer)
+	if err != nil {
+		return "", err
+	}
+
+	return http.DetectContentType(buffer), nil
 }

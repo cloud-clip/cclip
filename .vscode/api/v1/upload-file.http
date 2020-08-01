@@ -1,0 +1,5 @@
+POST http://localhost:50979/api/v1/clips
+content-type: text/plain
+x-cclip-name: Test file
+
+< ./test.txt

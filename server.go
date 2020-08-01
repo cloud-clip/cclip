@@ -66,6 +66,22 @@ var ClipDirectory string
 // MaxClipSize - Maximum size for a clip, in bytes
 var MaxClipSize int64 = 0
 
+// Password - The API password
+var Password string
+
+func checkPassword(next http.Handler) http.Handler {
+	authorization := "Bearer " + Password
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") != authorization {
+			w.WriteHeader(401)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func getClips(w http.ResponseWriter, req *http.Request) {
 	var files []string
 
@@ -339,11 +355,25 @@ func RunServer(c *cli.Context) error {
 	}
 
 	ClipDirectory = envDir // set clip directory
+	log.Println("Use clip directory", ClipDirectory)
+
 	if maxSize > 0 {
 		MaxClipSize = maxSize
+
+		log.Println("Using maximum clip size of", MaxClipSize, "bytes ...")
+	} else {
+		log.Println("[WARN] You have no maximum clip size defined")
 	}
 
+	Password = strings.TrimSpace(os.Getenv("CCLIP_PASSWORD"))
+
 	router := mux.NewRouter()
+
+	if Password != "" {
+		router.Use(checkPassword)
+	} else {
+		log.Println("[WARN] You have no password defined! Use CCLIP_PASSWORD to set one")
+	}
 
 	// initialize routes
 	router.HandleFunc("/api/v1", getServerInfo).Methods("GET")

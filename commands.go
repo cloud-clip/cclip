@@ -17,34 +17,22 @@
 package main
 
 import (
-	"log"
-	"os"
+	"fmt"
 
-	// https://github.com/urfave/cli/blob/master/docs/v2/manual.md
 	"github.com/urfave/cli/v2"
 )
 
-func main() {
-	app := &cli.App{
-		Flags: []cli.Flag{
-			/*
-				&cli.StringFlag{
-					Name:     "test",
-					Value:    "wurst",
-					Required: false,
-					Aliases:  []string{"t"},
-					Usage:    "a test flag",
-				},
-			*/
-		},
-		Commands: AppCommands,
-		Name:     "Cloud Clip",
-		Usage:    "Cloud Clip server and command line interface",
-		Action:   RunServer,
-	}
+// AppCommands - all known app commands
+var AppCommands = []*cli.Command{
+	{
+		Name:    "test",
+		Aliases: []string{"t"},
+		Usage:   "a test command",
+		Action:  test,
+	},
+}
 
-	err := app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
-	}
+func test(c *cli.Context) error {
+	fmt.Println("completed task: ", c.Args().First())
+	return nil
 }

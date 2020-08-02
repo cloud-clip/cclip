@@ -94,7 +94,7 @@ func GetClipByID(id string) (ClipFile, error) {
 
 // ScanClipDirectory - Scans clip directory for clip files
 func ScanClipDirectory() ([]ClipFile, error) {
-	var files []ClipFile
+	files := make([]ClipFile, 0)
 
 	// try scan directory for ".meta" files
 	err := filepath.Walk(ClipDirectory, func(metaFilePath string, metaFileStat os.FileInfo, err error) error {

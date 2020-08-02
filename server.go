@@ -183,7 +183,7 @@ func getClips(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var items []clipItem
+	items := make([]clipItem, 0)
 
 	for _, c := range clips {
 		clipMetaBytes, err := ioutil.ReadFile(c.metaFile)

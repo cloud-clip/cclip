@@ -362,9 +362,6 @@ func uploadClip(w http.ResponseWriter, req *http.Request) {
 		response.Size = clipFileStat.Size()
 	}
 
-	response.ModificationTime = clipFileStat.ModTime().Unix()
-	response.Size = clipFileStat.Size()
-
 	// serialize response
 	bytes, err = json.Marshal(response)
 	if err != nil {

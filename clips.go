@@ -26,15 +26,15 @@ import (
 	"strings"
 )
 
-// ByNewestClipFileList - describes a ClipFile list, which can be sorted by newest item descending
-type ByNewestClipFileList []ClipFile
+// ByNewestClipFile - describes a ClipFile list, which can be sorted by newest item descending
+type ByNewestClipFile []ClipFile
 
-func (a ByNewestClipFileList) Len() int { return len(a) }
-func (a ByNewestClipFileList) Less(i, j int) bool {
+func (a ByNewestClipFile) Len() int { return len(a) }
+func (a ByNewestClipFile) Less(i, j int) bool {
 	// order descending
 	return a[i].fileInfo.ModTime().Unix() > a[j].fileInfo.ModTime().Unix()
 }
-func (a ByNewestClipFileList) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByNewestClipFile) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 
 // ClipFile - A clip file
 type ClipFile struct {
@@ -43,6 +43,16 @@ type ClipFile struct {
 	id           string
 	metaFile     string
 	metaFileInfo os.FileInfo
+}
+
+// Delete - Deletes the clip
+func (c ClipFile) Delete() error {
+	err := os.Remove(c.file)
+	if err == nil {
+		err = os.Remove(c.metaFile)
+	}
+
+	return err
 }
 
 // ClipDirectory - The clip / output directory
@@ -121,7 +131,7 @@ func ScanClipDirectory() ([]ClipFile, error) {
 		return nil
 	})
 
-	sort.Sort(ByNewestClipFileList(files))
+	sort.Sort(ByNewestClipFile(files))
 
 	return files, err
 }

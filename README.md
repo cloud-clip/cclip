@@ -135,6 +135,28 @@ Connection: close
 | `Date` | The timestamp of the newest clip. |
 | `X-Cclip-Count` | The total number of clips. |
 
+#### [DELETE] /api/v1/clips
+
+Deltes ALL clips.
+
+Request:
+
+```http
+DELETE http://localhost:50979/api/v1/clips
+Authorization: Bearer <YOUR-PASSWORD-HERE>
+
+```
+
+Response:
+
+```http
+HTTP/1.1 204 OK
+Date: Wed, 05 Sep 1979 21:09:00 GMT
+Content-Length: 0
+Connection: close
+
+```
+
 #### [GET] /api/v1/clips/{id}
 
 Gets the data of a clip.

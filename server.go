@@ -82,19 +82,39 @@ func checkPassword(next http.Handler) http.Handler {
 	})
 }
 
-func deleteClip(w http.ResponseWriter, req *http.Request) {
-	vars := mux.Vars(req)
-
-	clip, err := GetClipByID(vars["id"])
+func deleteAllClips(w http.ResponseWriter, req *http.Request) {
+	clips, err := ScanClipDirectory()
 	if err == nil {
-		os.Remove(clip.file)
-		os.Remove(clip.metaFile)
+		for _, c := range clips {
+			err := c.Delete()
+			if err != nil {
+				SendError(w, err)
+				return
+			}
+		}
 
 		w.Header().Set("Content-Length", "0")
 		w.WriteHeader(204)
 	} else {
 		SendError(w, err)
 	}
+}
+
+func deleteClip(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+
+	clip, err := GetClipByID(vars["id"])
+	if err == nil {
+		err = clip.Delete()
+		if err == nil {
+			w.Header().Set("Content-Length", "0")
+			w.WriteHeader(204)
+
+			return
+		}
+	}
+
+	SendError(w, err)
 }
 
 func getClipData(w http.ResponseWriter, req *http.Request) {
@@ -442,6 +462,7 @@ func RunServer(c *cli.Context) error {
 
 	// initialize routes
 	AddHTTPAction(router, "/", getServerInfo, "GET")
+	AddHTTPAction(router, "/clips", deleteAllClips, "DELETE")
 	AddHTTPAction(router, "/clips", getClips, "GET")
 	AddHTTPAction(router, "/clips", getClipsHead, "HEAD")
 	AddHTTPAction(router, "/clips", uploadClip, "POST")

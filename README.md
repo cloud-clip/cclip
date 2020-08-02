@@ -166,6 +166,28 @@ Belgae ab extremis Galliae finibus oriuntur pertinent ad inferiorem partem flumi
 Aquitania a Garunna flumine ad Pyrenaeos montes et eam partem Oceani quae est ad Hispaniam pertinet spectat inter occasum solis et septentriones
 ```
 
+#### [DELETE] /api/v1/clips/{id}
+
+Deltes a clip.
+
+Request:
+
+```http
+DELETE http://localhost:50979/api/v1/clips/01234567890123456789012345678901
+Authorization: Bearer <YOUR-PASSWORD-HERE>
+
+```
+
+Response:
+
+```http
+HTTP/1.1 204 OK
+Date: Wed, 05 Sep 1979 21:09:00 GMT
+Content-Length: 0
+Connection: close
+
+```
+
 #### [POST] /api/v1/clips
 
 Uploads the data for a new clip.

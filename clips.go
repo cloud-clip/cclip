@@ -17,6 +17,7 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"path"
 	"path/filepath"
@@ -49,6 +50,37 @@ var ClipDirectory string
 
 // MaxClipSize - Maximum size for a clip, in bytes
 var MaxClipSize int64 = 0
+
+// GetClipByID - Returns a clip file by its ID
+func GetClipByID(id string) (ClipFile, error) {
+	var clipFile ClipFile
+
+	clipFileName := path.Join(ClipDirectory, id)
+	clipFileStat, err := os.Stat(clipFileName)
+	if err == nil {
+		if !clipFileStat.IsDir() {
+			clipMetaFileName := path.Join(ClipDirectory, id+".meta")
+			clipMetaFileStat, err := os.Stat(clipMetaFileName)
+			if err == nil {
+				if !clipMetaFileStat.IsDir() {
+					clipFile.file = clipFileName
+					clipFile.fileInfo = clipFileStat
+					clipFile.id = id
+					clipFile.metaFile = clipFileName
+					clipFile.metaFileInfo = clipMetaFileStat
+
+					err = nil
+				} else {
+					err = errors.New("Clip meta is not file")
+				}
+			}
+		} else {
+			err = errors.New("Clip is not file")
+		}
+	}
+
+	return clipFile, err
+}
 
 // ScanClipDirectory - Scans clip directory for clip files
 func ScanClipDirectory() ([]ClipFile, error) {

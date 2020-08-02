@@ -82,6 +82,21 @@ func checkPassword(next http.Handler) http.Handler {
 	})
 }
 
+func deleteClip(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+
+	clip, err := GetClipByID(vars["id"])
+	if err == nil {
+		os.Remove(clip.file)
+		os.Remove(clip.metaFile)
+
+		w.Header().Set("Content-Length", "0")
+		w.WriteHeader(204)
+	} else {
+		SendError(w, err)
+	}
+}
+
 func getClipData(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 
@@ -431,6 +446,7 @@ func RunServer(c *cli.Context) error {
 	AddHTTPAction(router, "/clips", getClipsHead, "HEAD")
 	AddHTTPAction(router, "/clips", uploadClip, "POST")
 	AddHTTPAction(router, "/clips/{id:[0-9a-f]{32}}", getClipData, "GET")
+	AddHTTPAction(router, "/clips/{id:[0-9a-f]{32}}", deleteClip, "DELETE")
 
 	log.Println("Server will run on port", port, "...")
 

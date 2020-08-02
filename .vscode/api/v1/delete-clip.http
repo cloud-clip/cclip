@@ -1,0 +1,2 @@
+DELETE http://localhost:50979/api/v1/clips/{{$dotenv CLIP_ID}}
+Authorization: Bearer {{$dotenv PASSWORD}}

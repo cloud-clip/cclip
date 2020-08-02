@@ -212,7 +212,7 @@ func getClips(w http.ResponseWriter, req *http.Request) {
 		newItem.CreationTime = newItem.ModificationTime
 		newItem.Size = c.fileInfo.Size()
 		newItem.ResourceLink = "/api/v1/clips/" + url.PathEscape(newItem.ID)
-		newItem.ShareLink = "/api/v1/clips/" + url.PathEscape(newItem.ID) + "/share"
+		newItem.ShareLink = "/api/v1/shares/" + url.PathEscape(newItem.ID)
 
 		items = append(items, newItem)
 	}
@@ -351,13 +351,13 @@ func uploadClip(w http.ResponseWriter, req *http.Request) {
 	response.MIME = clipMeta.MIME
 	response.Name = clipMeta.Name
 	response.ResourceLink = "/api/v1/clips/" + url.PathEscape(id)
-	response.ShareLink = "/api/v1/clips/" + url.PathEscape(id) + "/share"
+	response.ShareLink = "/api/v1/shares/" + url.PathEscape(id)
 	response.CreationTime = ctime
 	response.ModificationTime = -1
 	response.Size = -1
 
 	clipFileStat, err := os.Stat(clipFileName)
-	if err != nil {
+	if err == nil {
 		response.ModificationTime = clipFileStat.ModTime().Unix()
 		response.Size = clipFileStat.Size()
 	}

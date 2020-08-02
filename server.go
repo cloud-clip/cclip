@@ -371,6 +371,7 @@ func uploadClip(w http.ResponseWriter, req *http.Request) {
 
 	// send data
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Length", strconv.Itoa(len(bytes)))
 	w.WriteHeader(201)
 	w.Write(bytes)
 }

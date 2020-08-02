@@ -459,7 +459,7 @@ func RunServer(c *cli.Context) error {
 	}
 
 	// initialize routes
-	AddHTTPAction(router, "/", getServerInfo, "GET")
+	AddHTTPAction(router, "", getServerInfo, "GET")
 	AddHTTPAction(router, "/clips", deleteAllClips, "DELETE")
 	AddHTTPAction(router, "/clips", getClips, "GET")
 	AddHTTPAction(router, "/clips", getClipsHead, "HEAD")

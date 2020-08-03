@@ -1,6 +1,6 @@
 POST http://localhost:50979/api/v1/clips
 Authorization: Bearer {{$dotenv PASSWORD}}
-Content-Type: text/plain
-X-Cclip-Name: Test file
+Content-Type: {{$dotenv FILE_MIME}}
+X-Cclip-Name: {{$dotenv FILE_TITLE}}
 
 < {{$dotenv FILE_TO_UPLOAD}}

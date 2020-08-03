@@ -33,6 +33,30 @@ Environment variables:
 | `CCLIP_PASSWORD` | The password to use for all API calls. Default: none | `MySecretP@ssword123!` |
 | `CCLIP_PORT` | The TCP port, the server should run on. Default: `50979` | `23979` |
 
+### Docker
+
+#### Build and run
+
+```bash
+# build image
+docker build . -t cclip/cclip --no-cache
+
+# mount docker directory '/app/clips' to local '/path/to/local/clips/dir'
+# expose TCP port 59079
+# run with password 'test' (CCLIP_PASSWORD)
+docker run -v /path/to/local/clips/dir:/app/clips -p 50979:50979 -e CCLIP_PASSWORD=test -it cclip/cclip
+```
+
+#### Pull and run
+
+```bash
+# pull from Docker Hub
+docker pull cclip/cclip
+
+# run
+docker run -v /path/to/local/clips/dir:/app/clips -p 50979:50979 -e CCLIP_PASSWORD=test -it cclip/cclip
+```
+
 ### API
 
 #### [GET] /api/v1

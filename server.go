@@ -295,7 +295,7 @@ func uploadClip(w http.ResponseWriter, req *http.Request) {
 	clipFileName := path.Join(ClipDirectory, id)
 	clipMetaFileName := path.Join(ClipDirectory, id+".meta")
 
-	err = os.Rename(tmpFile.Name(), clipFileName)
+	err = MoveFile(tmpFile.Name(), clipFileName)
 	if err != nil {
 		SendError(w, err)
 		return

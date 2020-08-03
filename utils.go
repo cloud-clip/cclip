@@ -17,6 +17,7 @@
 package main
 
 import (
+	"io"
 	"net/http"
 	"os"
 )
@@ -33,4 +34,37 @@ func GetFileContentType(out *os.File) (string, error) {
 	}
 
 	return http.DetectContentType(buffer), nil
+}
+
+// MoveFile - Moves a file, which works also in Docker containers with mounted volumns
+func MoveFile(src string, dest string) error {
+	// open source for read
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	// open destination for writing
+	destFile, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+	defer destFile.Close()
+
+	// copy from source to destination
+	_, err = io.Copy(destFile, srcFile)
+	if err != nil {
+		return err
+	}
+
+	// remove source file
+	err = os.Remove(srcFile.Name())
+	if err != nil {
+		os.Remove(destFile.Name())
+
+		return err
+	}
+
+	return nil
 }

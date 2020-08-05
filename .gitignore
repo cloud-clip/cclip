@@ -2,3 +2,4 @@
 /test_server
 /.vscode/**/test.*
 /.vscode/api/**/.env
+/.env
